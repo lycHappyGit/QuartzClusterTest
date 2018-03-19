@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+        http://www.springframework.org/schema/beans    
+        http://www.springframework.org/schema/beans/spring-beans-3.1.xsd">
+
+	<!--  配置调度程序quartz ，其中配置JobDetail有两种方式 -->
+	<!--方式一：使用JobDetailBean，任务类必须实现Job接口 -->
+	<bean id="myjob" class="org.springframework.scheduling.quartz.JobDetailFactoryBean">
+		<property name="name" value="myjob1"></property>
+		<property name="jobClass" value="cn.lyc.scheduler.Myjob"></property>
+		<property name="jobDataAsMap">
+			<map>
+				<entry key="service">
+					<value>simple is the beat</value>
+				</entry>
+			</map>
+		</property>
+		<property name="durability" value="true" />
+	</bean>
+	
+	
+	
+	
+	<!-- 方式二：使用MethodInvokingJobDetailFactoryBean，任务类可以不实现Job接口，通过targetMethod指定调用方法 -->
+	<!-- 定义目标bean和bean中的方法 -->
+	<!-- <bean id="myJob" class="cn.lyc.scheduler.Myjob" />
+	<bean id="myJobMethod"
+		class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean">
+		<property name="targetObject">
+			<ref bean="myJob" />
+		</property>
+		<property name="targetMethod">  要执行的方法名称
+			<value>aa</value>
+		</property>
+	</bean> -->
+
+	<!-- ======================== 调度触发器 ======================== -->
+	<bean id="CronTriggerBean" class="org.springframework.scheduling.quartz.CronTriggerFactoryBean">
+		<property name="jobDetail" ref="myjob"></property>
+		<property name="cronExpression" value="0/3 * * * * ?"></property>
+	</bean>
+
+	<!-- ======================== 调度工厂 ======================== -->
+	<bean id="SpringJobSchedulerFactoryBean"
+		class="org.springframework.scheduling.quartz.SchedulerFactoryBean">
+		<property name="dataSource" ref="dataSource" />
+        <property name="applicationContextSchedulerContextKey" value="applicationContextKey" />
+        <property name="configLocation" value="classpath:quartz.properties" />
+        <property name="startupDelay" value="30" />
+		<property name="triggers">
+			<list>
+				<ref bean="CronTriggerBean" />
+			</list>
+		</property>
+	</bean>
+
+</beans>
